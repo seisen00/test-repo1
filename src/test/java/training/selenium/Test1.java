@@ -7,9 +7,8 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import java.util.concurrent.TimeUnit;
-
-import static org.openqa.selenium.support.ui.ExpectedConditions.titleIs;
 
 public class Test1 {
     private boolean isChrome = true;
@@ -21,17 +20,12 @@ public class Test1 {
     @Before
     public void start() {
         // isChrome = false;
-        // System.setProperty("webdriver.chrome.driver", "/data/bin/webdriver/chromedriver");
-        // System.setProperty("webdriver.gecko.driver", "/data/bin/webdriver/geckodriver");
         
         title = "webdriver - Поиск в Google";
-        if (isChrome) {
+        if (isChrome)
             driver = new ChromeDriver();
-        }
-        else {
+        else
             driver = new FirefoxDriver();
-            title += " - Mozilla Firefox";
-        }
         wait = new WebDriverWait(driver, 10);
     }
 
@@ -40,8 +34,10 @@ public class Test1 {
         driver.navigate().to("http://www.google.com");
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
         driver.findElement(By.name("q")).sendKeys("webdriver");
-        driver.findElement(By.name("btnK")).click();
-        wait.until(titleIs(title));
+        WebElement btn = driver.findElement(By.name("btnK"));
+        wait.until(ExpectedConditions.visibilityOf(btn));
+        btn.click();
+        wait.until(ExpectedConditions.titleIs(title));
     }
 
     @After
@@ -49,5 +45,4 @@ public class Test1 {
         driver.quit();
         driver = null;
     }
-
 }
