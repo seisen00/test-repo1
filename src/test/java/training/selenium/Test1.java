@@ -15,29 +15,36 @@ public class Test1 {
 
     public WebDriver driver;
     public WebDriverWait wait;
-    private String title;
 
     @Before
     public void start() {
         // isChrome = false;
         
-        title = "webdriver - Поиск в Google";
         if (isChrome)
             driver = new ChromeDriver();
         else
             driver = new FirefoxDriver();
         wait = new WebDriverWait(driver, 10);
+        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+    }
+
+    @Test
+    public void test2() {
+        driver.navigate().to("http://localhost/litecart/admin");
+        driver.findElement(By.name("username")).sendKeys("admin");
+        driver.findElement(By.name("password")).sendKeys("admin");
+        driver.findElement(By.name("login")).click();
+        wait.until(ExpectedConditions.titleIs("My Store"));
     }
 
     @Test
     public void test1() {
         driver.navigate().to("http://www.google.com");
-        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
         driver.findElement(By.name("q")).sendKeys("webdriver");
         WebElement btn = driver.findElement(By.name("btnK"));
         wait.until(ExpectedConditions.visibilityOf(btn));
         btn.click();
-        wait.until(ExpectedConditions.titleIs(title));
+        wait.until(ExpectedConditions.titleIs("webdriver - Поиск в Google"));
     }
 
     @After
