@@ -8,22 +8,37 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
 
 public class Test1 {
-    private boolean isChrome = true;
-
     public WebDriver driver;
     public WebDriverWait wait;
 
+    private final Logger log = LoggerFactory.getLogger(Test1.class);
+
     @Before
     public void start() {
-        // isChrome = false;
-        
-        if (isChrome)
+        String browser = System.getProperty("browser");
+        log.debug("browser property: '" + browser + "'");
+        if (browser == null) {
+            log.warn("Unknown browser property, use 'c' for Chrome, 'f' for Firefox. (Using Chrome by default now)");
+            browser = "c";
+        }
+
+        if (browser.equalsIgnoreCase("c")) {
+            log.info("Chrome browser start");
             driver = new ChromeDriver();
-        else
+        }
+        else if (browser.equalsIgnoreCase("f")) {
+            log.info("Firefox browser start");
             driver = new FirefoxDriver();
+        }
+        else {
+            log.error("Unknown browser '" + browser + "', use 'c' for Chrome, 'f' for Firefox. (System.exit now)");
+            System.exit(1);
+        }
         wait = new WebDriverWait(driver, 10);
         driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
     }

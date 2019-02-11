@@ -28,6 +28,12 @@
             <version>3.141.59</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.8.0-beta2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -50,10 +56,6 @@
                 <executions>
                     <execution>
                         <id>default-resources</id>
-                        <phase>none</phase>
-                    </execution>
-                    <execution>
-                        <id>default-testResources</id>
                         <phase>none</phase>
                     </execution>
                 </executions>
