@@ -19,6 +19,7 @@ public class Test1 {
 
     private final Logger log = LoggerFactory.getLogger(Test1.class);
     int sleepTime;
+    String browser;
 
     @Before
     public void start() {
@@ -31,12 +32,14 @@ public class Test1 {
         else
             sleepTime = Integer.parseInt(sleepTimeStr);
 
-        String browser = System.getProperty("browser");
-        log.debug("browser property: '" + browser + "'");
-        if (browser == null || browser.isEmpty()) {
+        String browserStr = System.getProperty("browser");
+        log.debug("browser property: '" + browserStr + "'");
+        if (browserStr == null || browserStr.isEmpty()) {
             log.warn("Unknown browser property, use 'c' for Chrome, 'f' for Firefox, 'i' for Internet Explorer. (Using Chrome by default now)");
             browser = "c";
         }
+        else
+            browser = browserStr;
 
         if (browser.equalsIgnoreCase("c")) {
             log.info("Chrome browser start");
@@ -93,10 +96,12 @@ public class Test1 {
         log.debug("stop function started");
 
         Thread.sleep(sleepTime);
-        driver.close();
-        log.debug("driver closed");
-        // driver.quit();
-        // log.debug("driver quitted");
+        if (browser.equalsIgnoreCase("i")) {
+            driver.close();
+            log.debug("driver closed");
+        }
+        driver.quit();
+        log.debug("driver quitted");
         driver = null;
 
         log.debug("stop function finished");
