@@ -12,6 +12,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.List;
 
 public class Test1 {
     public WebDriver driver;
@@ -59,9 +60,88 @@ public class Test1 {
         }
 
         wait = new WebDriverWait(driver, 10);
-        driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+        // driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 
         log.debug("start function finished");
+    }
+
+    @Test
+    public void test3() {
+        log.debug("test3 started");
+
+        driver.navigate().to("http://localhost/litecart/admin");
+        driver.findElement(By.name("username")).sendKeys("admin");
+        driver.findElement(By.name("password")).sendKeys("admin");
+        driver.findElement(By.name("login")).click();
+        wait.until(ExpectedConditions.titleIs("My Store"));
+
+        List<WebElement> menuItems;
+        List<WebElement> submenuItems;
+        WebElement menuItem;
+        WebElement submenuItem;
+        WebElement link;
+        WebElement header;
+        String cssItem = "#box-apps-menu #app-";
+        String cssSubitem = "#box-apps-menu #app- ul.docs li";
+        String cssHeader = "#content h1";
+        int itemsNum;
+        int itemsIndex;
+        int subitemsNum;
+        int subitemsIndex;
+
+        try {
+            menuItems = driver.findElements(By.cssSelector(cssItem));
+            if (menuItems.isEmpty()) {
+                log.error("no items in menu");
+            } else {
+                itemsNum = menuItems.size();
+                log.info("itemsNum: " + itemsNum);
+
+                itemsIndex = 0;
+                do {
+                    log.debug("find elements by '" + cssItem + "'");
+                    menuItems = driver.findElements(By.cssSelector(cssItem));
+                    log.debug("obtain menu item number " + (itemsIndex + 1));
+                    menuItem = menuItems.get(itemsIndex);
+                    log.info("menuItem[" + (itemsIndex + 1) + "]: " + menuItem.getText());
+                    link = menuItem.findElement(By.tagName("a"));
+                    log.info("link: " + link.getText());
+                    wait.until(ExpectedConditions.visibilityOf(link));
+                    link.click();
+                    log.info("link clicked");
+                    header = driver.findElement(By.cssSelector(cssHeader));
+                    log.info("header: " + header.getText());
+
+                    submenuItems = driver.findElements(By.cssSelector(cssSubitem));
+                    if (submenuItems.isEmpty()) {
+                        log.debug("no subitems in menu item");
+                        continue;
+                    }
+                    subitemsNum = submenuItems.size();
+                    log.info("subitemsNum: " + subitemsNum);
+
+                    subitemsIndex = 0;
+                    do {
+                        log.debug("\tfind elements by '" + cssSubitem + "'");
+                        submenuItems = driver.findElements(By.cssSelector(cssSubitem));
+                        log.debug("\tobtain submenu item number " + (subitemsIndex + 1));
+                        submenuItem = submenuItems.get(subitemsIndex);
+                        log.info("\tsubmenuItem[" + (subitemsIndex + 1) + "]: " + submenuItem.getText());
+                        link = submenuItem.findElement(By.tagName("a"));
+                        log.info("\tlink: " + link.getText());
+                        wait.until(ExpectedConditions.visibilityOf(link));
+                        link.click();
+                        log.info("\tlink clicked");
+                        header = driver.findElement(By.cssSelector(cssHeader));
+                        log.info("\theader: " + header.getText());
+                    } while (++subitemsIndex < subitemsNum);
+                } while (++itemsIndex < itemsNum);
+            }
+        } catch (WebDriverException e) {
+            log.error(e.getMessage());
+        }
+
+        log.debug("test3 finidhed");
     }
 
     @Test
