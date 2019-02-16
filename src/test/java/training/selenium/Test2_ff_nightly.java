@@ -43,7 +43,6 @@ public class Test2_ff_nightly {
         log.info("Options: " + ((HasCapabilities)driver).getCapabilities());
 
         wait = new WebDriverWait(driver, 10);
-        // driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 
         log.debug("start function finished");
     }

@@ -60,9 +60,42 @@ public class Test1 {
         }
 
         wait = new WebDriverWait(driver, 10);
-        // driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 
         log.debug("start function finished");
+    }
+
+    @Test
+    public void test4() {
+        log.debug("test4 started");
+
+        List<WebElement> products;
+        List<WebElement> stickers;
+        WebElement product;
+        String cssProducts = "li[class ^= product] a[title $= Duck] .image-wrapper";
+        String cssSticker = "div[class ^= sticker]";
+
+        try {
+            driver.navigate().to("http://localhost/litecart");
+            wait.until(ExpectedConditions.titleIs("Online Store | My Store"));
+
+            log.debug("find elements by '" + cssProducts + "'");
+            products = driver.findElements(By.cssSelector(cssProducts));
+            log.info("productsNum: " + products.size());
+            for (Object productObj: products) {
+                product = (WebElement) productObj;
+                log.info("next product: " + product.getText());
+                log.debug("\tfind elements by '" + cssSticker + "'");
+                stickers = product.findElements(By.cssSelector(cssSticker));
+                if (stickers.size() != 1)
+                    throw new WebDriverException("product '" + product.getText() + "' have stickers number not equals one: " + stickers.size());
+                log.info("\tsticker: " + stickers.get(0).getText());
+            }
+        } catch (WebDriverException e) {
+            log.error(e.getMessage());
+            throw e;
+        }
+
+        log.debug("test4 finidhed");
     }
 
     @Test
@@ -81,8 +114,8 @@ public class Test1 {
         WebElement submenuItem;
         WebElement link;
         WebElement header;
-        String cssItem = "#box-apps-menu #app-";
-        String cssSubitem = "#box-apps-menu #app- ul.docs li";
+        String cssItems = "#box-apps-menu #app-";
+        String cssSubitems = "#box-apps-menu #app- ul.docs li";
         String cssHeader = "#content h1";
         int itemsNum;
         int itemsIndex;
@@ -90,7 +123,7 @@ public class Test1 {
         int subitemsIndex;
 
         try {
-            menuItems = driver.findElements(By.cssSelector(cssItem));
+            menuItems = driver.findElements(By.cssSelector(cssItems));
             if (menuItems.isEmpty()) {
                 log.error("no items in menu");
             } else {
@@ -99,8 +132,10 @@ public class Test1 {
 
                 itemsIndex = 0;
                 do {
-                    log.debug("find elements by '" + cssItem + "'");
-                    menuItems = driver.findElements(By.cssSelector(cssItem));
+                    log.debug("find elements by '" + cssItems + "'");
+                    menuItems = driver.findElements(By.cssSelector(cssItems));
+                    if (itemsIndex >= menuItems.size())
+                        throw new WebDriverException("something totally changed. old menu index: " + itemsIndex + "; new menu items size: " + menuItems.size());
                     log.debug("obtain menu item number " + (itemsIndex + 1));
                     menuItem = menuItems.get(itemsIndex);
                     log.info("menuItem[" + (itemsIndex + 1) + "]: " + menuItem.getText());
@@ -108,11 +143,11 @@ public class Test1 {
                     log.info("link: " + link.getText());
                     wait.until(ExpectedConditions.visibilityOf(link));
                     link.click();
-                    log.info("link clicked");
+                    log.debug("link clicked");
                     header = driver.findElement(By.cssSelector(cssHeader));
                     log.info("header: " + header.getText());
 
-                    submenuItems = driver.findElements(By.cssSelector(cssSubitem));
+                    submenuItems = driver.findElements(By.cssSelector(cssSubitems));
                     if (submenuItems.isEmpty()) {
                         log.debug("no subitems in menu item");
                         continue;
@@ -122,8 +157,10 @@ public class Test1 {
 
                     subitemsIndex = 0;
                     do {
-                        log.debug("\tfind elements by '" + cssSubitem + "'");
-                        submenuItems = driver.findElements(By.cssSelector(cssSubitem));
+                        log.debug("\tfind elements by '" + cssSubitems + "'");
+                        submenuItems = driver.findElements(By.cssSelector(cssSubitems));
+                        if (subitemsIndex >= submenuItems.size())
+                            throw new WebDriverException("something totally changed. old submenu index: " + subitemsIndex + "; new submenu items size: " + submenuItems.size());
                         log.debug("\tobtain submenu item number " + (subitemsIndex + 1));
                         submenuItem = submenuItems.get(subitemsIndex);
                         log.info("\tsubmenuItem[" + (subitemsIndex + 1) + "]: " + submenuItem.getText());
@@ -131,7 +168,7 @@ public class Test1 {
                         log.info("\tlink: " + link.getText());
                         wait.until(ExpectedConditions.visibilityOf(link));
                         link.click();
-                        log.info("\tlink clicked");
+                        log.debug("\tlink clicked");
                         header = driver.findElement(By.cssSelector(cssHeader));
                         log.info("\theader: " + header.getText());
                     } while (++subitemsIndex < subitemsNum);
@@ -139,6 +176,7 @@ public class Test1 {
             }
         } catch (WebDriverException e) {
             log.error(e.getMessage());
+            throw e;
         }
 
         log.debug("test3 finidhed");
