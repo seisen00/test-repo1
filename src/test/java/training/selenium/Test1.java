@@ -71,21 +71,22 @@ public class Test1 {
         List<WebElement> products;
         List<WebElement> stickers;
         WebElement product;
-        String cssProducts = "li[class ^= product] a[title $= Duck] .image-wrapper";
-        String cssSticker = "div[class ^= sticker]";
+        String xpathProducts = "//li[starts-with(@class, 'product')]/a[@class='link' and contains(@title, ' Duck') and ./div[@class='name' and contains(., ' Duck')]]";
+        String xpathSticker = "./div[@class='image-wrapper']/div[starts-with(@class, 'sticker ')]";
 
         try {
             driver.navigate().to("http://localhost/litecart");
             wait.until(ExpectedConditions.titleIs("Online Store | My Store"));
 
-            log.debug("find elements by '" + cssProducts + "'");
-            products = driver.findElements(By.cssSelector(cssProducts));
+            log.debug("find all Duck products by '" + xpathProducts + "'");
+            products = driver.findElements(By.xpath(xpathProducts));
             log.info("productsNum: " + products.size());
             for (Object productObj: products) {
                 product = (WebElement) productObj;
                 log.info("next product: " + product.getText());
-                log.debug("\tfind elements by '" + cssSticker + "'");
-                stickers = product.findElements(By.cssSelector(cssSticker));
+                log.debug("\tfind elements by '" + xpathSticker + "'");
+                stickers = product.findElements(By.xpath(xpathSticker));
+                log.info("stickersNum: " + stickers.size());
                 if (stickers.size() != 1)
                     throw new WebDriverException("product '" + product.getText() + "' have stickers number not equals one: " + stickers.size());
                 log.info("\tsticker: " + stickers.get(0).getText());
@@ -114,9 +115,9 @@ public class Test1 {
         WebElement submenuItem;
         WebElement link;
         WebElement header;
-        String cssItems = "#box-apps-menu #app-";
-        String cssSubitems = "#box-apps-menu #app- ul.docs li";
-        String cssHeader = "#content h1";
+        String cssItems = "#box-apps-menu > #app-";
+        String cssSubitems = "#box-apps-menu > #app- > ul.docs > li";
+        String cssHeader = "#content > h1";
         int itemsNum;
         int itemsIndex;
         int subitemsNum;
