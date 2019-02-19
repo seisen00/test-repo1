@@ -71,21 +71,25 @@ public class Test1 {
         List<WebElement> products;
         List<WebElement> stickers;
         WebElement product;
-        String xpathProducts = "//li[starts-with(@class, 'product')]/a[@class='link' and contains(@title, ' Duck') and ./div[@class='name' and contains(., ' Duck')]]";
-        String xpathSticker = "./div[@class='image-wrapper']/div[starts-with(@class, 'sticker ')]";
+        String cssProducts = "li[class ^= product]";
+        String cssSticker = "div[class = image-wrapper] div[class ^= sticker]";
+        // String xpathProducts = "//li[starts-with(@class, 'product')]/a[@class='link' and contains(@title, ' Duck') and ./div[@class='name' and contains(., ' Duck')]]";
+        // String xpathSticker = "./div[@class='image-wrapper']/div[starts-with(@class, 'sticker ')]";
 
         try {
             driver.navigate().to("http://localhost/litecart");
             wait.until(ExpectedConditions.titleIs("Online Store | My Store"));
 
-            log.debug("find all Duck products by '" + xpathProducts + "'");
-            products = driver.findElements(By.xpath(xpathProducts));
+            log.debug("find all Duck products by '" + cssProducts + "'");
+            products = driver.findElements(By.cssSelector(cssProducts));
+            // products = driver.findElements(By.xpath(xpathProducts));
             log.info("productsNum: " + products.size());
             for (Object productObj: products) {
                 product = (WebElement) productObj;
                 log.info("next product: " + product.getText());
-                log.debug("\tfind elements by '" + xpathSticker + "'");
-                stickers = product.findElements(By.xpath(xpathSticker));
+                log.debug("\tfind elements by '" + cssSticker + "'");
+                stickers = product.findElements(By.cssSelector(cssSticker));
+                // stickers = product.findElements(By.xpath(xpathSticker));
                 log.info("stickersNum: " + stickers.size());
                 if (stickers.size() != 1)
                     throw new WebDriverException("product '" + product.getText() + "' have stickers number not equals one: " + stickers.size());
