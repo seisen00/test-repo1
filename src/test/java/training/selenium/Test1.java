@@ -15,6 +15,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 public class Test1 {
     public WebDriver driver;
@@ -66,6 +68,168 @@ public class Test1 {
         log.debug("start function finished");
     }
 
+    class Product {
+        public String name;
+        public String priceRegular;
+        public String priceCampain;
+        public String priceRegularColor;
+        public String priceCampainColor;
+        public String fontRegularStyle;
+        public String fontCampainStyle;
+        public Dimension priceRegularSize;
+        public Dimension priceCampainSize;
+
+        public boolean checkColors() {
+            int colorR = -1;
+            int colorG = -1;
+            int colorB = -1;
+            int colorA = -1;
+
+            Pattern p = Pattern.compile("rgb(a)?\\( *([0-9]+), *([0-9]+), *([0-9]+)(, *([0-9]+))?\\)");
+            Matcher m = null;
+
+            m = p.matcher(priceRegularColor);
+            if (!m.matches()) {
+                throw new WebDriverException("incorrect regular color format: " + priceRegularColor);
+            } else {
+                colorR = Integer.parseInt(m.group(2));
+                colorG = Integer.parseInt(m.group(3));
+                colorB = Integer.parseInt(m.group(4));
+                if (m.groupCount() == 6 && m.group(6) != null)
+                    colorA = Integer.parseInt(m.group(6));
+                log.debug(" regular colorR: " + colorR + ", colorG: " + colorG + ", colorB: " + colorB + ", colorA: " + colorA);
+                if (!((colorR == colorG) && (colorG == colorB)))
+                    throw new WebDriverException("incorrect regular color: " + colorR + " " + colorG + " " + colorB);
+            }
+
+            m = p.matcher(priceCampainColor);
+            if (!m.matches()) {
+                throw new WebDriverException("incorrect campain color format: " + priceCampainColor);
+            } else {
+                colorR = Integer.parseInt(m.group(2));
+                colorG = Integer.parseInt(m.group(3));
+                colorB = Integer.parseInt(m.group(4));
+                if (m.groupCount() == 6 && m.group(6) != null)
+                    colorA = Integer.parseInt(m.group(6));
+                log.debug(" campain colorR: " + colorR + ", colorG: " + colorG + ", colorB: " + colorB + ", colorA: " + colorA);
+                if (!((colorG == 0) && (colorB == 0)))
+                    throw new WebDriverException("incorrect campain color: " + colorR + " " + colorG + " " + colorB);
+            }
+
+            return true;
+        }
+
+        public boolean checkSizes() {
+            return priceRegularSize.getWidth() < priceCampainSize.getWidth() && priceRegularSize.getHeight() < priceCampainSize.getHeight();
+        }
+
+        public boolean checkFontStyles() {
+            if (!browser.equalsIgnoreCase("i")) { // there is no 'text-decoration-line' in IE
+                if (!fontRegularStyle.equals("line-through"))
+                    throw new WebDriverException("incorrect main product regular font style: '" + fontRegularStyle + "'");
+            }
+            if (!(fontCampainStyle.equals("700") || fontCampainStyle.equals("900"))) // bold: 700 - in Chrome, 900 - in Firefox
+                throw new WebDriverException("incorrect main product campain font style: '" + fontCampainStyle + "'");
+            return true;
+        }
+
+        public boolean compareTo(Product other) {
+            return toString().compareTo(other.toString()) == 0;
+        }
+
+        public String toString() {
+            return name + "_" + priceRegular + "_" + priceCampain;
+        }
+        public String printFullInfo() {
+            return toString() + "_" + priceRegularColor + "_" + priceCampainColor + "_" + fontRegularStyle + "_" + fontCampainStyle + "_" + priceRegularSize + "_" + priceCampainSize;
+        }
+    }
+
+    @Test
+    public void test6() {
+        log.debug("test6 started");
+
+        try {
+            driver.navigate().to("http://localhost/litecart");
+            wait.until(ExpectedConditions.titleIs("Online Store | My Store"));
+
+            Product productFromMain = new Product();
+            Product productFromPage = new Product();
+            String xpathOnMainProduct = "//div[@id='box-campaigns']//a[@class='link']";
+            String xpathOnPageProduct = "//div[@id='box-product']//img[@class='image']";
+            String xpathPriceMainRegular = ".//s[@class='regular-price']";
+            String xpathPricePageRegular = "//div[@class='information']//s[@class='regular-price']";
+            String xpathPriceMainCampain = ".//strong[@class='campaign-price']";
+            String xpathPricePageCampain = "//div[@class='information']//strong[@class='campaign-price']";
+
+            WebElement link = driver.findElement(By.xpath(xpathOnMainProduct));
+            productFromMain.name = link.getAttribute("title");
+            log.info("product from main name: '" + productFromMain.name + "'");
+            WebElement priceMainRegular = link.findElement(By.xpath(xpathPriceMainRegular));
+            productFromMain.priceRegular = priceMainRegular.getText();
+            log.info("product from main price regular: '" + productFromMain.priceRegular + "'");
+            productFromMain.priceRegularColor = priceMainRegular.getCssValue("color");
+            log.info("product from main price regular color: '" + productFromMain.priceRegularColor + "'");
+            productFromMain.priceRegularSize = priceMainRegular.getSize();
+            log.info("product from main price regular size: '" + productFromMain.priceRegularSize + "'");
+            productFromMain.fontRegularStyle = priceMainRegular.getCssValue("text-decoration-line");
+            log.info("product from main regular font style: " + productFromMain.fontRegularStyle);
+            WebElement priceMainCampain = link.findElement(By.xpath(xpathPriceMainCampain));
+            productFromMain.priceCampain = priceMainCampain.getText();
+            log.info("product from main price campain: '" + productFromMain.priceCampain + "'");
+            productFromMain.priceCampainColor = priceMainCampain.getCssValue("color");
+            log.info("product from main price campain color: '" + productFromMain.priceCampainColor + "'");
+            productFromMain.priceCampainSize = priceMainCampain.getSize();
+            log.info("product from main price campain size: '" + productFromMain.priceCampainSize + "'");
+            productFromMain.fontCampainStyle = priceMainCampain.getCssValue("font-weight");
+            log.info("product from main campain font style: " + productFromMain.fontCampainStyle);
+
+            link.click();
+            wait.until(ExpectedConditions.titleContains("Subcategory"));
+            productFromPage.name = driver.findElement(By.xpath(xpathOnPageProduct)).getAttribute("title");
+            log.info("product from page name: '" + productFromPage.name + "'");
+            WebElement pricePageRegular = driver.findElement(By.xpath(xpathPricePageRegular));
+            productFromPage.priceRegular = pricePageRegular.getText();
+            log.info("product from page price regular: '" + productFromPage.priceRegular + "'");
+            productFromPage.priceRegularColor = pricePageRegular.getCssValue("color");
+            log.info("product from page price regular color: '" + productFromPage.priceRegularColor + "'");
+            productFromPage.priceRegularSize = pricePageRegular.getSize();
+            log.info("product from page price regular size: '" + productFromPage.priceRegularSize + "'");
+            productFromPage.fontRegularStyle = pricePageRegular.getCssValue("text-decoration-line");
+            log.info("product from page regular font style: " + productFromPage.fontRegularStyle);
+            WebElement pricePageCampain = driver.findElement(By.xpath(xpathPricePageCampain));
+            productFromPage.priceCampain = pricePageCampain.getText();
+            log.info("product from page price campain: '" + productFromPage.priceCampain + "'");
+            productFromPage.priceCampainColor = pricePageCampain.getCssValue("color");
+            log.info("product from page price campain color: '" + productFromPage.priceCampainColor + "'");
+            productFromPage.priceCampainSize = pricePageCampain.getSize();
+            log.info("product from page price campain size: '" + productFromPage.priceCampainSize + "'");
+            productFromPage.fontCampainStyle = pricePageCampain.getCssValue("font-weight");
+            log.info("product from page campain font style: " + productFromPage.fontCampainStyle);
+
+            // а, б
+            if (!productFromMain.compareTo(productFromPage))
+                throw new WebDriverException("products are different:\n from main = '" + productFromMain.toString() + "'\n from page = '" + productFromPage.toString() + "'");
+
+            // в, г
+            productFromMain.checkColors();
+            productFromMain.checkFontStyles();
+            productFromPage.checkColors();
+            productFromPage.checkFontStyles();
+
+            // д
+            if (!productFromMain.checkSizes())
+                throw new WebDriverException("incorrect main product size values: '" + productFromMain.printFullInfo() + "'");
+            if (!productFromPage.checkSizes())
+                throw new WebDriverException("incorrect page product size values: '" + productFromPage.printFullInfo() + "'");
+        } catch (WebDriverException e) {
+            log.error(e.getMessage());
+            throw e;
+        }
+
+        log.debug("test6 finished");
+    }
+
     private void checkSorting(String xpathLocator) {
         String entryOrig = "";
         String entrySorted = "";
@@ -78,9 +242,8 @@ public class Test1 {
             entryOrig = enntriesOrig.get(i).getText();
             entrySorted = entriesSorted.get(i).getText();
             log.info("next entry(" + (i + 1) + "): " + entryOrig);
-            if (!entryOrig.equals(entrySorted)) {
+            if (!entryOrig.equals(entrySorted))
                 throw new WebDriverException("entries[" + (i + 1) + "] are not sorted; orig='" + entryOrig + "', sorted='" + entrySorted + "'");
-            }
         }
     }
 
@@ -167,7 +330,7 @@ public class Test1 {
             throw e;
         }
 
-        log.debug("test5 finidhed");
+        log.debug("test5 finished");
     }
 
     @Test
@@ -206,7 +369,7 @@ public class Test1 {
             throw e;
         }
 
-        log.debug("test4 finidhed");
+        log.debug("test4 finished");
     }
 
     @Test
@@ -290,7 +453,7 @@ public class Test1 {
             throw e;
         }
 
-        log.debug("test3 finidhed");
+        log.debug("test3 finished");
     }
 
     @Test
@@ -303,7 +466,7 @@ public class Test1 {
         driver.findElement(By.name("login")).click();
         wait.until(ExpectedConditions.titleIs("My Store"));
 
-        log.debug("test2 finidhed");
+        log.debug("test2 finished");
     }
 
     @Test
@@ -317,7 +480,7 @@ public class Test1 {
         btn.click();
         wait.until(ExpectedConditions.titleIs("webdriver - Поиск в Google"));
 
-        log.debug("test1 finidhed");
+        log.debug("test1 finished");
     }
 
     @After
