@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Comparator;
 
 public class Test1 {
     public WebDriver driver;
@@ -62,6 +64,110 @@ public class Test1 {
         wait = new WebDriverWait(driver, 10);
 
         log.debug("start function finished");
+    }
+
+    private void checkSorting(String xpathLocator) {
+        String entryOrig = "";
+        String entrySorted = "";
+        ArrayList<WebElement> enntriesOrig = new ArrayList<WebElement>(driver.findElements(By.xpath(xpathLocator)));
+        ArrayList<WebElement> entriesSorted = new ArrayList<WebElement>(enntriesOrig);
+        log.info("entries size: " + entriesSorted.size());
+        entriesSorted.sort(Comparator.comparing(WebElement::getText));
+        log.info("entries sorted size: " + entriesSorted.size());
+        for (int i = 0; i < enntriesOrig.size(); i++) {
+            entryOrig = enntriesOrig.get(i).getText();
+            entrySorted = entriesSorted.get(i).getText();
+            log.info("next entry(" + (i + 1) + "): " + entryOrig);
+            if (!entryOrig.equals(entrySorted)) {
+                throw new WebDriverException("entries[" + (i + 1) + "] are not sorted; orig='" + entryOrig + "', sorted='" + entrySorted + "'");
+            }
+        }
+    }
+
+    @Test
+    public void test5() {
+        log.debug("test5 started");
+
+        try {
+            driver.navigate().to("http://localhost/litecart/admin");
+            driver.findElement(By.name("username")).sendKeys("admin");
+            driver.findElement(By.name("password")).sendKeys("admin");
+            driver.findElement(By.name("login")).click();
+            wait.until(ExpectedConditions.titleIs("My Store"));
+
+            List<WebElement> rows;
+            WebElement row;
+            int rowsNum = 0;
+            int rowsIndex = 0;
+
+            // 1 а)
+            driver.navigate().to("http://localhost/litecart/admin/?app=countries&doc=countries");
+            String countriesTitle = "Countries | My Store";
+            wait.until(ExpectedConditions.titleIs(countriesTitle));
+            log.info("check countries sorting");
+            String xpathCountries = "//form[@name='countries_form']//a[not(@title='Edit')]";
+            checkSorting(xpathCountries);
+
+            // 1 б)
+            String xpathCountriesRows = "//form[@name='countries_form']//tr[@class='row']";
+            String xpathZone = "./td[6]";
+            String xpathZoneEdit = "./td[7]/a";
+            String xpathZones = "//table[@id='table-zones']//td[input[contains(@name, 'name')] and input[not(@value='')]]";
+            WebElement zone;
+            WebElement zoneEdit;
+            int zonesCount = 0;
+
+            rows = driver.findElements(By.xpath(xpathCountriesRows));
+            rowsNum = rows.size();
+            rowsIndex = 0;
+            do {
+                rows = driver.findElements(By.xpath(xpathCountriesRows));
+                row = rows.get(rowsIndex);
+                zone = row.findElement(By.xpath(xpathZone));
+                log.info("next zone(" + (rowsIndex + 1) + "): " + zone.getText());
+                zonesCount = Integer.parseInt(zone.getText());
+                if (zonesCount > 0) {
+                    log.info(zonesCount + " zones found");
+                    zoneEdit = row.findElement(By.xpath(xpathZoneEdit));
+                    zoneEdit.click();
+                    wait.until(ExpectedConditions.titleIs("Edit Country | My Store"));
+                    log.info("check zones sorting");
+                    checkSorting(xpathZones);
+                    driver.navigate().back();
+                    wait.until(ExpectedConditions.titleIs(countriesTitle));
+                }
+            } while (++rowsIndex < rowsNum);
+
+            // 2
+            driver.navigate().to("http://localhost/litecart/admin/?app=geo_zones&doc=geo_zones");
+            String geoZonesTitle = "Geo Zones | My Store";
+            wait.until(ExpectedConditions.titleIs(geoZonesTitle));
+
+            String xpathGeoZonesRows = "//form[@name='geo_zones_form']//tr[@class='row']";
+            String xpathGeoZoneEdit = "./td[5]/a";
+            String xpathGeoZones = "//table[@id='table-zones']//select[contains(@name, 'zone_code')]/option[@selected='selected']";
+            WebElement geoZoneEdit;
+
+            rows = driver.findElements(By.xpath(xpathGeoZonesRows));
+            rowsNum = rows.size();
+            rowsIndex = 0;
+            do {
+                rows = driver.findElements(By.xpath(xpathGeoZonesRows));
+                row = rows.get(rowsIndex);
+                geoZoneEdit = row.findElement(By.xpath(xpathGeoZoneEdit));
+                geoZoneEdit.click();
+                wait.until(ExpectedConditions.titleIs("Edit Geo Zone | My Store"));
+                log.info("check geo zones sorting");
+                checkSorting(xpathGeoZones);
+                driver.navigate().back();
+                wait.until(ExpectedConditions.titleIs(geoZonesTitle));
+            } while (++rowsIndex < rowsNum);
+        } catch (WebDriverException e) {
+            log.error(e.getMessage());
+            throw e;
+        }
+
+        log.debug("test5 finidhed");
     }
 
     @Test
