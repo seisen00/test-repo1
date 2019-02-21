@@ -112,7 +112,7 @@ public class Test1 {
             String xpathCountriesRows = "//form[@name='countries_form']//tr[@class='row']";
             String xpathZone = "./td[6]";
             String xpathZoneEdit = "./td[7]/a";
-            String xpathZones = "//table[@id='table-zones']//td[input[contains(@name, 'name')] and input[not(@value='')]]";
+            String xpathZones = "//table[@id='table-zones']//input[contains(@name, 'name') and not(@value='')]";
             WebElement zone;
             WebElement zoneEdit;
             int zonesCount = 0;
