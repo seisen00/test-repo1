@@ -8,7 +8,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.openqa.selenium.support.ui.ExpectedConditions;
+import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.TimeUnit;
@@ -151,7 +151,7 @@ public class Test1 {
 
         try {
             driver.navigate().to("http://localhost/litecart");
-            wait.until(ExpectedConditions.titleIs("Online Store | My Store"));
+            wait.until(titleIs("Online Store | My Store"));
 
             Product productFromMain = new Product();
             Product productFromPage = new Product();
@@ -185,7 +185,7 @@ public class Test1 {
             log.info("product from main campain font style: " + productFromMain.fontCampainStyle);
 
             link.click();
-            wait.until(ExpectedConditions.titleContains("Subcategory"));
+            wait.until(titleContains("Subcategory"));
             productFromPage.name = driver.findElement(By.xpath(xpathOnPageProduct)).getAttribute("title");
             log.info("product from page name: '" + productFromPage.name + "'");
             WebElement pricePageRegular = driver.findElement(By.xpath(xpathPricePageRegular));
@@ -256,7 +256,7 @@ public class Test1 {
             driver.findElement(By.name("username")).sendKeys("admin");
             driver.findElement(By.name("password")).sendKeys("admin");
             driver.findElement(By.name("login")).click();
-            wait.until(ExpectedConditions.titleIs("My Store"));
+            wait.until(titleIs("My Store"));
 
             List<WebElement> rows;
             WebElement row;
@@ -266,7 +266,7 @@ public class Test1 {
             // 1 а)
             driver.navigate().to("http://localhost/litecart/admin/?app=countries&doc=countries");
             String countriesTitle = "Countries | My Store";
-            wait.until(ExpectedConditions.titleIs(countriesTitle));
+            wait.until(titleIs(countriesTitle));
             log.info("check countries sorting");
             String xpathCountries = "//form[@name='countries_form']//a[not(@title='Edit')]";
             checkSorting(xpathCountries);
@@ -293,18 +293,18 @@ public class Test1 {
                     log.info(zonesCount + " zones found");
                     zoneEdit = row.findElement(By.xpath(xpathZoneEdit));
                     zoneEdit.click();
-                    wait.until(ExpectedConditions.titleIs("Edit Country | My Store"));
+                    wait.until(titleIs("Edit Country | My Store"));
                     log.info("check zones sorting");
                     checkSorting(xpathZones);
                     driver.navigate().back();
-                    wait.until(ExpectedConditions.titleIs(countriesTitle));
+                    wait.until(titleIs(countriesTitle));
                 }
             } while (++rowsIndex < rowsNum);
 
             // 2
             driver.navigate().to("http://localhost/litecart/admin/?app=geo_zones&doc=geo_zones");
             String geoZonesTitle = "Geo Zones | My Store";
-            wait.until(ExpectedConditions.titleIs(geoZonesTitle));
+            wait.until(titleIs(geoZonesTitle));
 
             String xpathGeoZonesRows = "//form[@name='geo_zones_form']//tr[@class='row']";
             String xpathGeoZoneEdit = "./td[5]/a";
@@ -319,11 +319,11 @@ public class Test1 {
                 row = rows.get(rowsIndex);
                 geoZoneEdit = row.findElement(By.xpath(xpathGeoZoneEdit));
                 geoZoneEdit.click();
-                wait.until(ExpectedConditions.titleIs("Edit Geo Zone | My Store"));
+                wait.until(titleIs("Edit Geo Zone | My Store"));
                 log.info("check geo zones sorting");
                 checkSorting(xpathGeoZones);
                 driver.navigate().back();
-                wait.until(ExpectedConditions.titleIs(geoZonesTitle));
+                wait.until(titleIs(geoZonesTitle));
             } while (++rowsIndex < rowsNum);
         } catch (WebDriverException e) {
             log.error(e.getMessage());
@@ -347,7 +347,7 @@ public class Test1 {
 
         try {
             driver.navigate().to("http://localhost/litecart");
-            wait.until(ExpectedConditions.titleIs("Online Store | My Store"));
+            wait.until(titleIs("Online Store | My Store"));
 
             log.debug("find all Duck products by '" + cssProducts + "'");
             products = driver.findElements(By.cssSelector(cssProducts));
@@ -380,7 +380,7 @@ public class Test1 {
         driver.findElement(By.name("username")).sendKeys("admin");
         driver.findElement(By.name("password")).sendKeys("admin");
         driver.findElement(By.name("login")).click();
-        wait.until(ExpectedConditions.titleIs("My Store"));
+        wait.until(titleIs("My Store"));
 
         List<WebElement> menuItems;
         List<WebElement> submenuItems;
@@ -415,7 +415,7 @@ public class Test1 {
                     log.info("menuItem[" + (itemsIndex + 1) + "]: " + menuItem.getText());
                     link = menuItem.findElement(By.tagName("a"));
                     log.info("link: " + link.getText());
-                    wait.until(ExpectedConditions.visibilityOf(link));
+                    wait.until(visibilityOf(link));
                     link.click();
                     log.debug("link clicked");
                     header = driver.findElement(By.cssSelector(cssHeader));
@@ -440,7 +440,7 @@ public class Test1 {
                         log.info("\tsubmenuItem[" + (subitemsIndex + 1) + "]: " + submenuItem.getText());
                         link = submenuItem.findElement(By.tagName("a"));
                         log.info("\tlink: " + link.getText());
-                        wait.until(ExpectedConditions.visibilityOf(link));
+                        wait.until(visibilityOf(link));
                         link.click();
                         log.debug("\tlink clicked");
                         header = driver.findElement(By.cssSelector(cssHeader));
@@ -464,7 +464,7 @@ public class Test1 {
         driver.findElement(By.name("username")).sendKeys("admin");
         driver.findElement(By.name("password")).sendKeys("admin");
         driver.findElement(By.name("login")).click();
-        wait.until(ExpectedConditions.titleIs("My Store"));
+        wait.until(titleIs("My Store"));
 
         log.debug("test2 finished");
     }
@@ -476,9 +476,9 @@ public class Test1 {
         driver.navigate().to("http://www.google.com");
         driver.findElement(By.name("q")).sendKeys("webdriver");
         WebElement btn = driver.findElement(By.name("btnK"));
-        wait.until(ExpectedConditions.visibilityOf(btn));
+        wait.until(elementToBeClickable(btn));
         btn.click();
-        wait.until(ExpectedConditions.titleIs("webdriver - Поиск в Google"));
+        wait.until(titleIs("webdriver - Поиск в Google"));
 
         log.debug("test1 finished");
     }
