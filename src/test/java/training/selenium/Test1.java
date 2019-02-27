@@ -488,7 +488,7 @@ public class Test1 {
         log.debug("stop function started");
 
         Thread.sleep(sleepTime);
-        if (browser.equalsIgnoreCase("i")) {
+        if (!browser.equalsIgnoreCase("f")) {
             driver.close();
             log.debug("driver closed");
         }
