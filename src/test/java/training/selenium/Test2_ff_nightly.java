@@ -9,14 +9,13 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.concurrent.TimeUnit;
 import java.io.File;
 
 public class Test2_ff_nightly {
     public WebDriver driver;
     public WebDriverWait wait;
 
-    private final Logger log = LoggerFactory.getLogger(Test1.class);
+    private final Logger log = LoggerFactory.getLogger(Test2_ff_nightly.class);
     int sleepTime;
     String browser;
 
