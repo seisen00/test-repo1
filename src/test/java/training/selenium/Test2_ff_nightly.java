@@ -7,15 +7,15 @@ import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.*;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import java.io.File;
 
 public class Test2_ff_nightly {
     public WebDriver driver;
     public WebDriverWait wait;
 
-    private final Logger log = LoggerFactory.getLogger(Test2_ff_nightly.class);
+    private static final Logger log = LogManager.getLogger(Test2_ff_nightly.class);
     int sleepTime;
     String browser;
 

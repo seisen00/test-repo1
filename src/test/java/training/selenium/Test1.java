@@ -9,8 +9,8 @@ import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import static org.openqa.selenium.support.ui.ExpectedConditions.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -21,7 +21,7 @@ public class Test1 {
     public WebDriver driver;
     public WebDriverWait wait;
 
-    private final Logger log = LoggerFactory.getLogger(Test1.class);
+    private static final Logger log = LogManager.getLogger(Test1.class);
     int sleepTime;
     String browser;
 
