@@ -13,6 +13,9 @@ import org.openqa.selenium.support.ui.Select;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import java.util.Random;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.io.IOError;
 
 public class Test3 {
     public WebDriver driver;
@@ -62,6 +65,83 @@ public class Test3 {
         wait = new WebDriverWait(driver, 10);
 
         log.debug("start function finished");
+    }
+
+    public String getNormalizedPath(String path) {
+        try {
+            return Paths.get(path).toAbsolutePath().normalize().toString();
+        } catch (IOError e) {
+            Throwable cause = e.getCause();
+            if (cause == null) {
+                String message = e.getMessage();
+                if (message == null)
+                    log.error(e.toString());
+                else
+                    log.error(message);
+            }
+            else
+                log.error(cause.getMessage());
+            return null;
+        }
+    }
+
+    @Test
+    public void test2() throws InterruptedException {
+        log.debug("test2 started");
+
+        String picturePath = getNormalizedPath("./src/test/resources/duck.jpeg");
+        log.info("picture path: " + picturePath);
+
+        try {
+            driver.navigate().to("http://localhost/litecart/admin");
+            driver.findElement(By.name("username")).sendKeys("admin");
+            driver.findElement(By.name("password")).sendKeys("admin");
+            driver.findElement(By.name("login")).click();
+            wait.until(titleIs("My Store"));
+
+            driver.navigate().to("http://localhost/litecart/admin/?app=catalog&doc=catalog");
+            wait.until(titleIs("Catalog | My Store"));
+            log.info("add new product");
+            String xpathNewProduct = "//*[@id='content']//a[contains(@href, 'edit_product')]";
+            driver.findElement(By.xpath(xpathNewProduct)).click();
+            wait.until(titleIs("Add New Product | My Store"));
+
+            // fill General
+            String xpathFile = "//*[@id='tab-general']//input[@type='file']";
+            driver.findElement(By.xpath(xpathFile)).sendKeys(picturePath);
+            String xpathStatus = "//*[@id='tab-general']//input[@type='radio' and @value='1']";
+            driver.findElement(By.xpath(xpathStatus)).sendKeys(Keys.SPACE, Keys.TAB, "duck1", Keys.TAB, "1", Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, Keys.SPACE, Keys.TAB, Keys.TAB, "1", Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, Keys.TAB, "03052019", Keys.TAB, "03052020");
+
+            // fill Information
+            String xpathInformation = "//*[@id='content']//a[@href='#tab-information']";
+            driver.findElement(By.xpath(xpathInformation)).click();
+            String xpathManufacturer = "//*[@id='tab-information']//select[@name='manufacturer_id']";
+            WebElement weManufacturer = wait.until(presenceOfElementLocated(By.xpath(xpathManufacturer)));
+            wait.until(elementToBeClickable(weManufacturer));
+            String newProductName = "duck1";
+            weManufacturer.sendKeys(Keys.DOWN, Keys.TAB, Keys.TAB, newProductName, Keys.TAB, "short duck", Keys.TAB, "long duck", Keys.TAB, "duck title", Keys.TAB, "duck meta");
+
+            // fill Prices
+            String xpathPrices = "//*[@id='content']//a[@href='#tab-prices']";
+            driver.findElement(By.xpath(xpathPrices)).click();
+            String xpathPurchasePrice = "//*[@id='tab-prices']//input[@name='purchase_price']";
+            WebElement wePurchasePrice = wait.until(presenceOfElementLocated(By.xpath(xpathPurchasePrice)));
+            wait.until(elementToBeClickable(wePurchasePrice));
+            wePurchasePrice.sendKeys(Keys.HOME, Keys.chord(Keys.CONTROL, "a"), "2.2", Keys.TAB, Keys.DOWN, Keys.TAB, Keys.TAB, Keys.TAB, "2", Keys.TAB, "0.2", Keys.TAB, "0.5", Keys.TAB, "0.01");
+
+            // save and check
+            String xpathSaveButton = "//*[@id='content']//button[@name='save']";
+            driver.findElement(By.xpath(xpathSaveButton)).click();
+            wait.until(titleIs("Catalog | My Store"));
+            String xpathNewProductName = "//*[@id='content']//a[contains(.,'" + newProductName + "')]";
+            WebElement weNewProductName = driver.findElement(By.xpath(xpathNewProductName));
+            log.info("new product name found: " + newProductName);
+        } catch (WebDriverException e) {
+            log.error(e.getMessage());
+            throw e;
+        }
+
+        log.debug("test1 finished");
     }
 
     public class Account {
