@@ -67,6 +67,137 @@ public class Test3 {
         log.debug("start function finished");
     }
 
+    @Test
+    public void test3() throws InterruptedException {
+        log.debug("test3 started");
+
+        String xpathLinkFirstProduct = "//*[@id='box-most-popular']//li[1]/a[1]";
+        String xpathSelectProductSize = "//*[@id='box-product']//select[@name='options[Size]']";
+        String xpathButtonAdd = "//*[@id='box-product']//button[@name='add_cart_product']";
+        String xpathCartQuanity = "//*[@id='cart']//span[@class='quantity']";
+        String xpathLinkCheckout = "//*[@id='cart']//a[@class='link']";
+        String xpathTableProducts = "//*[@id='order_confirmation-wrapper']//tr";
+        String xpathRemoveButton = "//*[@id='box-checkout-cart']//li[1]//button[@name='remove_cart_item']";
+        String xpathNoItems = "//*[@id='checkout-cart-wrapper']//em";
+
+
+        try {
+            driver.navigate().to("http://localhost/litecart");
+
+            WebElement weSelectProductSize;
+            Select selectProductSize;
+            WebElement weCartQuantity;
+            WebElement weCartQuantity2;
+            int oldCartQuantity = -1;
+            int currentCartQuantity = -1;
+            int newCartQuantity = -1;
+            int triesNum = 0;
+
+            // add 3 products to cart
+            for (int productsNum = 3; productsNum > 0; productsNum--) {
+                wait.until(titleIs("Online Store | My Store"));
+                wait.until(elementToBeClickable(wait.until(presenceOfElementLocated(By.xpath(xpathLinkFirstProduct))))).click();
+                wait.until(titleContains("Rubber Ducks | My Store"));
+
+                weCartQuantity = wait.until(presenceOfElementLocated(By.xpath(xpathCartQuanity)));
+                currentCartQuantity = Integer.parseInt(weCartQuantity.getText());
+                oldCartQuantity = currentCartQuantity;
+                log.debug("current cart quantity: " + currentCartQuantity);
+
+                try {
+                    weSelectProductSize = driver.findElement(By.xpath(xpathSelectProductSize));
+                    wait.until(elementToBeClickable(weSelectProductSize));
+                    selectProductSize = new Select(weSelectProductSize);
+                    log.debug(" select product size");
+                    selectProductSize.selectByValue("Large");
+                } catch (NoSuchElementException e) {}
+                log.debug("add next product");
+                wait.until(elementToBeClickable(wait.until(presenceOfElementLocated(By.xpath(xpathButtonAdd))))).click();
+
+                newCartQuantity = currentCartQuantity;
+                for (triesNum = 10; triesNum > 0; triesNum--) {
+                    newCartQuantity = Integer.parseInt(weCartQuantity.getText());
+                    log.debug("try num: " + triesNum + ", new cart quantity: " + newCartQuantity);
+                    if (currentCartQuantity == newCartQuantity) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            log.error(e.getMessage());
+                            throw e;
+                        }
+                    }
+                    else {
+                        currentCartQuantity = newCartQuantity;
+                        break;
+                    }
+                }
+                log.info("old quantity: " + oldCartQuantity + ", new quantity: " + currentCartQuantity);
+                if (oldCartQuantity == currentCartQuantity)
+                    throw new WebDriverException("can't add product to cart");
+
+                driver.navigate().back();
+            }
+
+            // checkout
+            wait.until(titleIs("Online Store | My Store"));
+            wait.until(elementToBeClickable(wait.until(presenceOfElementLocated(By.xpath(xpathLinkCheckout))))).click();
+
+            // delete all products from cart
+            WebElement tableProduct;
+            int currentTableProductsSize = -1;
+            int newTableProductsSize = -1;
+
+            wait.until(titleIs("Checkout | My Store"));
+            currentTableProductsSize = wait.until(presenceOfAllElementsLocatedBy(By.xpath(xpathTableProducts))).size();
+            if (currentTableProductsSize == 0)
+                throw new WebDriverException("can't delete products from cart, current products table size is 0");
+            log.info("initial products table size: " + currentTableProductsSize);
+            log.debug("delete first product");
+            wait.until(elementToBeClickable(wait.until(presenceOfElementLocated(By.xpath(xpathRemoveButton))))).click();
+            triesNum = 10;
+            do {
+                try {
+                    newTableProductsSize = driver.findElements(By.xpath(xpathTableProducts)).size();
+                    log.debug("new products table size: " + newTableProductsSize);
+                } catch (NoSuchElementException e) {
+                    if (driver.findElement(By.xpath(xpathNoItems)).getText().equals("There are no items in your cart.")) {
+                        log.info("no more products in table");
+                        currentTableProductsSize = 0;
+                        break;
+                    }
+                }
+                if (currentTableProductsSize == newTableProductsSize) {
+                    try {
+                        log.debug("try num: " + triesNum);
+                        triesNum--;
+                        if (triesNum <= 0)
+                            break;
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        log.error(e.getMessage());
+                        throw e;
+                    }
+                }
+                else {
+                    triesNum = 10;
+                    currentTableProductsSize = newTableProductsSize;
+                    if (currentTableProductsSize != 0) {
+                        log.debug("delete next product");
+                        wait.until(elementToBeClickable(wait.until(presenceOfElementLocated(By.xpath(xpathRemoveButton))))).click();
+                    }
+                }
+            } while (currentTableProductsSize > 0);
+            if (currentTableProductsSize != 0)
+                throw new WebDriverException("can't delete all products from cart, final products table size: " + currentTableProductsSize);
+        } catch (WebDriverException e) {
+            log.error(e.getMessage());
+            throw e;
+        }
+
+        log.debug("test3 finished");
+    }
+
+
     public String getNormalizedPath(String path) {
         try {
             return Paths.get(path).toAbsolutePath().normalize().toString();
