@@ -8,12 +8,14 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.ie.InternetExplorerDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedCondition;
 import static org.openqa.selenium.support.ui.ExpectedConditions.*;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -65,6 +67,80 @@ public class Test1 {
         wait = new WebDriverWait(driver, 10);
 
         log.debug("start function finished");
+    }
+
+    static ExpectedCondition<String> thereIsWindowOtherThan(final Set<String> oldWindows) {
+        return new ExpectedCondition<String>() {
+            private String newWindow = "";
+
+            @Override
+            public String apply(WebDriver driver) {
+                Set<String> currentWindows = driver.getWindowHandles();
+                if (currentWindows.size() != oldWindows.size()) {
+                    currentWindows.removeAll(oldWindows);
+                    if (currentWindows.size() != 1)
+                        return null;
+                    return currentWindows.iterator().next();
+                }
+                return null;
+            }
+
+            @Override
+            public String toString() {
+                return "find new window handle wich is not present in set: " + oldWindows;
+            }
+        };
+    }
+
+    @Test
+    public void test7() throws InterruptedException {
+        log.debug("test7 started");
+
+        try {
+            driver.navigate().to("http://localhost/litecart/admin");
+            driver.findElement(By.name("username")).sendKeys("admin");
+            driver.findElement(By.name("password")).sendKeys("admin");
+            driver.findElement(By.name("login")).click();
+            wait.until(titleIs("My Store"));
+
+            // edit country
+            driver.navigate().to("http://localhost/litecart/admin/?app=countries&doc=countries");
+            String countriesTitle = "Countries | My Store";
+            wait.until(titleIs(countriesTitle));
+            log.info("edit country");
+            String xpathCountries = "//form[@name='countries_form']//a[@title='Edit']";
+            driver.findElements(By.xpath(xpathCountries)).get(0);
+            wait.until(elementToBeClickable(driver.findElements(By.xpath(xpathCountries)).get(0))).click();
+            wait.until(titleIs("Edit Country | My Store"));
+
+            String mainWindow = driver.getWindowHandle();
+            log.debug("main window handle: " + mainWindow);
+            Set<String> oldWindows;
+            String newWindow = "";
+
+            // open links in new Windows
+            String xpathLinks = "//*[@id='content']//a[@target='_blank' and not(@title='Help')]";
+            ArrayList<WebElement> links = new ArrayList<WebElement>(driver.findElements(By.xpath(xpathLinks)));
+            log.info("links number found: " + links.size());
+            WebElement link;
+            for (Object linkObj: links) {
+                oldWindows = driver.getWindowHandles();
+                link = (WebElement) linkObj;
+                log.info("click link: " + link.getAttribute("pathname"));
+                wait.until(elementToBeClickable(link)).click();
+                newWindow = wait.until(thereIsWindowOtherThan(oldWindows));
+                log.debug("new window handle: " + newWindow);
+                driver.switchTo().window(newWindow);
+                Thread.sleep(1000);
+                driver.close();
+                driver.switchTo().window(mainWindow);
+            }
+        } catch (WebDriverException e) {
+            log.error(e.getMessage());
+            throw e;
+        }
+
+        log.debug("test7 finished");
     }
 
     class Product {

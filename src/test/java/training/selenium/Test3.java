@@ -118,14 +118,8 @@ public class Test3 {
                 for (triesNum = 10; triesNum > 0; triesNum--) {
                     newCartQuantity = Integer.parseInt(weCartQuantity.getText());
                     log.debug("try num: " + triesNum + ", new cart quantity: " + newCartQuantity);
-                    if (currentCartQuantity == newCartQuantity) {
-                        try {
-                            Thread.sleep(1000);
-                        } catch (InterruptedException e) {
-                            log.error(e.getMessage());
-                            throw e;
-                        }
-                    }
+                    if (currentCartQuantity == newCartQuantity)
+                        Thread.sleep(1000);
                     else {
                         currentCartQuantity = newCartQuantity;
                         break;
@@ -167,16 +161,11 @@ public class Test3 {
                     }
                 }
                 if (currentTableProductsSize == newTableProductsSize) {
-                    try {
-                        log.debug("try num: " + triesNum);
-                        triesNum--;
-                        if (triesNum <= 0)
-                            break;
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        log.error(e.getMessage());
-                        throw e;
-                    }
+                    log.debug("try num: " + triesNum);
+                    triesNum--;
+                    if (triesNum <= 0)
+                        break;
+                    Thread.sleep(1000);
                 }
                 else {
                     triesNum = 10;
