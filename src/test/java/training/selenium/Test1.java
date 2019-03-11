@@ -71,8 +71,6 @@ public class Test1 {
 
     static ExpectedCondition<String> thereIsWindowOtherThan(final Set<String> oldWindows) {
         return new ExpectedCondition<String>() {
-            private String newWindow = "";
-
             @Override
             public String apply(WebDriver driver) {
                 Set<String> currentWindows = driver.getWindowHandles();
